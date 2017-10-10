@@ -70,9 +70,13 @@ export class DatePickerInnerComponent implements OnInit, OnChanges {
   @Output() update: EventEmitter<Date> = new EventEmitter<Date>(false);
 
   @Output()
-  activeDateChange: EventEmitter<Date> = new EventEmitter<Date>(
-    undefined
-  );
+  activeDateChange: EventEmitter<{
+    newDate: Date,
+    fromDayPicker: boolean
+  }> = new EventEmitter<{
+    newDate: Date,
+    fromDayPicker: boolean
+  }>(undefined);
 
   stepDay: any = {};
   stepMonth: any = {};
@@ -119,7 +123,6 @@ export class DatePickerInnerComponent implements OnInit, OnChanges {
   // tslint:disable-next-line:no-unused-variable
   ngOnChanges(changes: SimpleChanges): void {
     this.refreshView();
-    this.checkIfActiveDateGotUpdated(changes.activeDate);
   }
 
   // Check if activeDate has been update and then emit the activeDateChange with the new date
@@ -131,7 +134,10 @@ export class DatePickerInnerComponent implements OnInit, OnChanges {
         previousValue instanceof Date &&
         previousValue.getTime() !== activeDate.currentValue.getTime()
       ) {
-        this.activeDateChange.emit(this.activeDate);
+        this.activeDateChange.emit({
+          newDate: this.activeDate,
+          fromDayPicker: false
+        });
       }
     }
   }
@@ -254,7 +260,7 @@ export class DatePickerInnerComponent implements OnInit, OnChanges {
     );
   }
 
-  select(date: Date, isManual = true): void {
+  select(date: Date, isManual = true, fromDayPicker: boolean = false): void {
     if (this.datepickerMode === this.minMode) {
       if (!this.activeDate) {
         this.activeDate = new Date(0, 0, 0, 0, 0, 0, 0);
@@ -284,6 +290,10 @@ export class DatePickerInnerComponent implements OnInit, OnChanges {
     this.selectedDate = new Date(this.activeDate.valueOf());
     this.update.emit(this.activeDate);
     this.refreshView();
+    if (isManual) this.activeDateChange.emit({
+      newDate: this.activeDate,
+      fromDayPicker: fromDayPicker
+    });
   }
 
   move(direction: number): void {
@@ -301,14 +311,17 @@ export class DatePickerInnerComponent implements OnInit, OnChanges {
     }
 
     if (expectedStep) {
-      const year =
-        this.activeDate.getFullYear() + direction * (expectedStep.years || 0);
-      const month =
-        this.activeDate.getMonth() + direction * (expectedStep.months || 0);
-      this.activeDate = new Date(year, month, 1);
+      const year = this.activeDate.getFullYear() + direction * (expectedStep.years || 0);
+      const month = this.activeDate.getMonth() + direction * (expectedStep.months || 0);
+      const newDate = new Date(year, month, 1);
+      if (this.isDisabled(newDate)) return;
 
+      this.activeDate = newDate;
       this.refreshView();
-      this.activeDateChange.emit(this.activeDate);
+      this.activeDateChange.emit({
+        newDate: this.activeDate,
+        fromDayPicker: false
+      });
     }
   }
 

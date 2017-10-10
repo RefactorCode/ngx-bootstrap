@@ -63,7 +63,8 @@ import { DatePickerInnerComponent } from './datepicker-inner.component';
                   *ngIf="!(datePicker.onlyCurrentMonth && dtz.secondary)"
                   [ngClass]="{'btn-secondary': isBs4 && !dtz.selected && !datePicker.isActive(dtz), 'btn-info': dtz.selected, disabled: dtz.disabled, active: !isBs4 && datePicker.isActive(dtz), 'btn-default': !isBs4}"
                   [disabled]="dtz.disabled"
-                  (click)="datePicker.select(dtz.date)" tabindex="-1">
+                  (click)="datePicker.select(dtz.date, false, true)" 
+                  tabindex="-1">
             <span [ngClass]="{'text-muted': dtz.secondary || dtz.current, 'text-info': !isBs4 && dtz.current}">{{ dtz.label }}</span>
           </button>
         </td>
